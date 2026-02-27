@@ -1,4 +1,5 @@
 import type { Field } from './field/type'
+import type { CreateHeadlessFormOptions } from './form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
@@ -24,18 +25,19 @@ export function calculateFinalSchema({
 }: {
   schema: JsfObjectSchema
   values: SchemaValue
-  options?: LegacyOptions
+  options?: CreateHeadlessFormOptions
 }): JsfObjectSchema {
   const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
+  const { legacyOptions, customJsonLogicOps } = options
 
-  applySchemaRules(schemaCopy, values, options, jsonLogicContext)
+  applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
 
   if (jsonLogicContext?.schema.computedValues) {
-    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
+    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values, customJsonLogicOps)
     // If we had computed values applied to the schema,
     // we need to re-apply the schema rules to update the fields
-    applySchemaRules(schemaCopy, values, options, jsonLogicContext)
+    applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
   }
 
   return schemaCopy
@@ -102,12 +104,13 @@ function applySchemaRules(
   }
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
-  (schema.allOf ?? [])
-    .filter((rule: JsfSchema) => typeof rule.if !== 'undefined')
-    .forEach((rule) => {
-      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options, jsonLogicContext)
-      conditionalRules.push(result)
-    })
+  const allOf = schema.allOf ?? []
+  const jsonLogicAllOf = schema['x-jsf-logic']?.allOf ?? [];
+
+  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => typeof rule.if !== 'undefined').forEach((rule) => {
+    const result = evaluateConditional(values, schema, rule, options, jsonLogicContext)
+    conditionalRules.push(result)
+  })
 
   // Process the conditional rules
   for (const { rule, matches } of conditionalRules) {
@@ -133,7 +136,20 @@ function applySchemaRules(
           applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext)
         }
         if (propertySchema.items) {
-          applySchemaRules(propertySchema.items as JsfObjectSchema, values[key], options, jsonLogicContext)
+          /*
+          * This is a partial workaround to apply conditional logic to fields with items.
+          * Due to the nature of these fields, the value is an array. applySchemaRules expects
+          * an object and it simply does not process the rules if the value is not an object.
+          *
+          * The correct solution would be to refactor applySchemaRules to handle arrays properly,
+          * but for now we simply pass an empty object to ensure the rules are applied.
+          *
+          * This means that the visibility rules in this case will only be based on the
+          * schema and will not work based on the actual values of the items in the array.
+          *
+          * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
+          */
+          applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
         }
       }
     }
@@ -181,10 +197,11 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema, 
       deepMergeSchemas(field, newField)
 
       const fieldSchema = schema.properties?.[field.name]
+      const originalFieldSchema = originalSchema.properties?.[field.name]
 
       if (fieldSchema && typeof fieldSchema === 'object') {
         if (field.fields && fieldSchema.type === 'object') {
-          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema, originalSchema)
+          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema, originalFieldSchema as JsfObjectSchema)
         }
       }
     }

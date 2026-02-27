@@ -98,8 +98,27 @@ describe('fields', () => {
       {
         inputType: 'fieldset',
         type: 'fieldset',
-        jsonType: 'boolean',
-        fields: [],
+        jsonType: 'object',
+        fields: [
+          {
+            inputType: 'number',
+            isVisible: true,
+            jsonType: 'number',
+            label: 'Age',
+            name: 'age',
+            required: false,
+            type: 'number',
+          },
+          {
+            inputType: 'number',
+            isVisible: true,
+            jsonType: 'number',
+            label: 'Amount',
+            name: 'amount',
+            required: false,
+            type: 'number',
+          },
+        ],
         name: 'root',
         required: true,
         isVisible: false,
@@ -441,6 +460,79 @@ describe('fields', () => {
         },
       ])
     })
+
+    it('supports x-jsf-presentation properties inside options', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          plan: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'free', title: 'Free' },
+              { 'const': 'basic', 'title': 'Basic', 'x-jsf-presentation': { meta: { displayCost: '$30.00/mo', originalCost: '$35.00/mo' } } },
+              { 'const': 'standard', 'title': 'Standard', 'x-jsf-presentation': { meta: { displayCost: '$50.00/mo' }, recommended: true } },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          inputType: 'radio',
+          type: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'plan',
+          required: false,
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Basic', value: 'basic', meta: { displayCost: '$30.00/mo', originalCost: '$35.00/mo' } },
+            { label: 'Standard', value: 'standard', meta: { displayCost: '$50.00/mo' }, recommended: true },
+          ],
+        },
+      ])
+    })
+
+    it('ignores a non-object x-jsf-presentation', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          plan: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'free', title: 'Free' },
+              // @ts-expect-error - using an invalid value on purpose
+              { 'const': 'basic', 'title': 'Basic', 'x-jsf-presentation': '$30.00/mo' },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          inputType: 'radio',
+          type: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'plan',
+          required: false,
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Basic', value: 'basic' },
+          ],
+        },
+      ])
+    })
   })
 
   describe('input type calculation', () => {
@@ -609,6 +701,18 @@ describe('fields', () => {
         const: true,
       }
       const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('checkbox')
+      expect(field?.checkboxValue).toBe(true)
+    })
+
+    it('uses checkbox input for boolean/null type array with boolean const value', () => {
+      const booleanNullSchema = {
+        'x-jsf-presentation': {
+          inputType: 'checkbox' as const,
+        },
+        'type': ['boolean', 'null'],
+      }
+      const field = buildFieldSchema(booleanNullSchema, 'test')
       expect(field?.inputType).toBe('checkbox')
       expect(field?.checkboxValue).toBe(true)
     })

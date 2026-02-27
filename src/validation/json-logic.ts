@@ -1,5 +1,6 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { CreateHeadlessFormOptions } from '../form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import jsonLogic from 'json-logic-js'
 
@@ -128,11 +129,14 @@ export function computePropertyValues(
  * @param schema - The schema to apply computed attributes to
  * @param computedValuesDefinition - The computed values to apply
  * @param values - The current form values
+ * @param customJsonLogicOps - The custom JSON Logic operations to apply
  * @returns The schema with computed attributes applied
  */
-export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue, customJsonLogicOps: CreateHeadlessFormOptions['customJsonLogicOps'] = {}): JsfObjectSchema {
   if (computedValuesDefinition) {
     const computedValues: Record<string, any> = {}
+
+    addCustomJsonLogicOperations(customJsonLogicOps)
 
     Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
       const computedValue = computePropertyValues(name, definition.rule, values)
@@ -140,6 +144,8 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
     })
 
     cycleThroughPropertiesAndApplyValues(schema, computedValues)
+
+    removeCustomJsonLogicOperations(customJsonLogicOps)
   }
 
   return schema
@@ -174,10 +180,10 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
       cycleThroughPropertiesAndApplyValues(propertySchema.if, computedValues)
     }
 
-    /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
-    * apply the computed values
-    */
-
+    /**
+     * If the schema has an allOf, anyOf or oneOf property, we need to cycle through each property inside it and
+     * apply the computed values
+     */
     if (propertySchema.allOf && propertySchema.allOf.length > 0) {
       for (const schema of propertySchema.allOf) {
         cycleThroughPropertiesAndApplyValues(schema, computedValues)
@@ -227,7 +233,8 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
     // If it's a template, we need to interpolate it, replacing the handlebars with the computed value
     return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
       const computationName = computation.trim()
-      return computedValues[computationName] || `{{${computationName}}}`
+      // 0 is a valid computation output
+      return computedValues[computationName] ?? `{{${computationName}}}`
     })
   }
 

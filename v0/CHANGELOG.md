@@ -1,3 +1,21 @@
+#### 0.12.3-beta.0 (2026-01-21)
+
+##### Chores
+
+*  Fix schema used for testing v0 ([#248](https://github.com/remoteoss/json-schema-form/pull/248)) ([a4e2b463](https://github.com/remoteoss/json-schema-form/commit/a4e2b46370293066ecc94724dd4e76b17a458a66))
+
+#### 0.12.2-beta.0 (2025-10-23)
+
+##### New Features
+
+* **v0:**  Support nested fieldset conditionals ([#156](https://github.com/remoteoss/json-schema-form/pull/156)) ([877e82e1](https://github.com/remoteoss/json-schema-form/commit/877e82e148d1ff6964ba634108f8ca821c040565))
+
+#### 0.12.1-beta.0 (2025-10-09)
+
+##### Bug Fixes
+
+* **checkbox:**  Support optional boolean type for v0 ([#236](https://github.com/remoteoss/json-schema-form/pull/236)) ([76e8927f](https://github.com/remoteoss/json-schema-form/commit/76e8927fc2f4615620fe34eef303b2f9c8c81e6e))
+
 #### 0.12.0-beta.0 (2025-06-25)
 
 ##### New Features

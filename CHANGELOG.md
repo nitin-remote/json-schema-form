@@ -1,3 +1,58 @@
+#### 1.2.9 (2026-01-21)
+
+##### New Features
+
+*  Nested fieldsets conditionals & defaults support, json-logic `allOf` conditionals support ([#248](https://github.com/remoteoss/json-schema-form/pull/248)) ([a4e2b463](https://github.com/remoteoss/json-schema-form/commit/a4e2b46370293066ecc94724dd4e76b17a458a66))
+
+#### 1.2.8 (2025-12-02)
+
+##### Bug Fixes
+
+* **group-array:**  support default values ([#245](https://github.com/remoteoss/json-schema-form/pull/245)) ([d3044693](https://github.com/remoteoss/json-schema-form/commit/d3044693e0ddee3c1aaaea9bf81bc71398b1e71c))
+* **file:** Support validation for file like objects ([#246](https://github.com/remoteoss/json-schema-form/pull/246)) ([726a8b67](https://github.com/remoteoss/json-schema-form/commit/726a8b67e75bf9a5d0eddcb1297115442da79069))
+
+#### 1.2.7 (2025-11-21)
+
+##### Fixes
+
+* **typescript:** export FormResult and related types for better type inference ([#241](https://github.com/remoteoss/json-schema-form/pull/241)) ([a9fd050](https://github.com/remoteoss/json-schema-form/commit/a9fd050))
+
+#### 1.2.6 (2025-10-30)
+
+##### Chores
+
+* **performance:**  optimise field updates with large dropdown options ([#239](https://github.com/remoteoss/json-schema-form/pull/239)) ([272e0536](https://github.com/remoteoss/json-schema-form/commit/272e053697fd59cb3f9d4b01fa17236e2c411630))
+
+#### 1.2.5 (2025-10-21)
+
+##### Bug Fixes
+
+* **json-logic:**  apply custom validators when calculating the final schema ([#238](https://github.com/remoteoss/json-schema-form/pull/238)) ([15da4569](https://github.com/remoteoss/json-schema-form/commit/15da45690d26a7e525053564df06163962531505))
+
+#### 1.2.4 (2025-10-06)
+
+##### Bug Fixes
+
+* **checkbox:**  Support optional boolean type ([#234](https://github.com/remoteoss/json-schema-form/pull/234)) ([1c3d73e2](https://github.com/remoteoss/json-schema-form/commit/1c3d73e21bcd7f3b76d037492cf231a087d7c075))
+
+#### 1.2.3 (2025-09-25)
+
+##### Bug Fixes
+
+* **options:**  spread all option's presentation properties into option's root ([#233](https://github.com/remoteoss/json-schema-form/pull/233)) ([b98cc160](https://github.com/remoteoss/json-schema-form/commit/b98cc160bdf59c10e5a5f276f4564274e5e8e0b3))
+
+#### 1.2.2 (2025-09-18)
+
+##### Bug Fixes
+
+* **array:**  Fix conditional visibility in group-arrays for booleans conditionals ([#231](https://github.com/remoteoss/json-schema-form/pull/231)) ([91e5ccde](https://github.com/remoteoss/json-schema-form/commit/91e5ccdea52d2ec2fdd79a7720a19f34d12398c1))
+
+#### 1.2.1 (2025-09-18)
+
+##### Bug Fixes
+
+* **schema:**  keep custom functions on nested fields  ([#232](https://github.com/remoteoss/json-schema-form/pull/232)) ([2dbdd82b](https://github.com/remoteoss/json-schema-form/commit/2dbdd82bc77942883ab8c761eba4b0c989a8fe4a))
+
 #### 1.2.0 (2025-09-03)
 
 ##### Bug Fixes
